@@ -1,0 +1,67 @@
+include:
+  - path: ./services/docker-compose.yml
+
+services:
+  
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./resources/prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - localprom
+    ports:
+      - 9090:9090
+  
+  logs_db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - logs_db:/var/lib/mysql
+      - ./scripts/logs_db:/docker-entrypoint-initdb.d
+      - ./resources/my.cnf:/etc/mysql/conf.d/my.cnf
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h 127.0.0.1 --silent --wait=10 && sh /docker-entrypoint-initdb.d/start.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    ports:
+      - 3306:3306
+    networks:
+      - localprom
+      - database
+
+  mysql_exporter:
+    image: prom/mysqld-exporter
+    environment:
+      DATA_SOURCE_NAME: ${MYSQL_USER_EXPORT}:${MYSQL_PASSWORD_EXPORT}@tcp(logs_db:3306)/${MYSQL_DATABASE}
+    volumes:
+      - ./resources/config.my-cnf:/.my.cnf
+    depends_on:
+      logs_db:
+        condition: service_healthy
+    networks:
+      - localprom
+    ports:
+      - 9104:9104
+
+  grafana:
+    image: grafana/grafana
+    networks:
+      - localprom
+    ports:
+      - 3000:3000
+
+networks:
+  localprom:
+    driver: bridge
+  database:
+    driver: bridge
+
+volumes:
+  logs_db:
