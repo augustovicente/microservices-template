@@ -1,4 +1,4 @@
-# README
+# Microservices Template
 
 This project is a template for creating a microservice architectures application using Docker, quick and easy.
 
