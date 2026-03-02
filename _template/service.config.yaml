@@ -1,0 +1,32 @@
+service:
+  name: {{SERVICE_NAME}}
+  port: 3000
+  logLevel: info
+
+database:
+  type: none
+  # Uncomment and configure when your service needs a database:
+  # type: mysql
+  # host: {{SERVICE_NAME}}_db
+  # port: 3306
+  # name: {{SERVICE_NAME}}
+  # user: admin
+  # password: admin
+  # poolSize: 10
+  # migrationsDir: ./db-migrations
+
+features:
+  prometheus: true
+  auth: false
+  cors: true
+  healthCheck: true
+
+cors:
+  origins:
+    - "*"
+  methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - PATCH

@@ -1,0 +1,28 @@
+{
+  "name": "{{SERVICE_NAME}}-service",
+  "version": "1.0.0",
+  "description": "{{SERVICE_NAME}} microservice",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "build": "tsc",
+    "prestart": "npm run build && node dist/migrate.js",
+    "start": "node dist/index.js",
+    "test": "jest --passWithNoTests --detectOpenHandles"
+  },
+  "dependencies": {
+    "@microservices-template/shared": "file:../../packages/shared",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.14",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.1.5",
+    "typescript": "^5.5.2",
+    "typescript-eslint": "~7.18.0"
+  }
+}

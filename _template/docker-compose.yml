@@ -1,0 +1,11 @@
+services:
+  {{SERVICE_NAME}}_app:
+    image: node:20
+    volumes:
+      - ../../:/project
+    working_dir: /project/services/{{SERVICE_NAME}}
+    command: npm start
+    ports:
+      - "{{SERVICE_PORT}}:3000"
+    networks:
+      - localprom

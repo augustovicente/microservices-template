@@ -1,2 +1,6 @@
 include:
   - path: ./logs/docker-compose.yml
+  - path: ./auth/docker-compose.yml
+  - path: ./email/docker-compose.yml
+  - path: ./document/docker-compose.yml
+  - path: ./notification/docker-compose.yml

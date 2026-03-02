@@ -1,0 +1,40 @@
+services:
+  notification_app:
+    image: node:20
+    volumes:
+      - ../../:/project
+    working_dir: /project/services/notification
+    command: npm start
+    ports:
+      - "3005:3000"
+    depends_on:
+      notification_db:
+        condition: service_healthy
+    networks:
+      - database
+      - messaging
+      - localprom
+
+  notification_db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: notification
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - notification_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uadmin -padmin -h 127.0.0.1 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - 3309:3306
+    networks:
+      - database
+
+volumes:
+  notification_db_data:

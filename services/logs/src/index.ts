@@ -1,27 +1,31 @@
-import express from 'express';
-import { requestLoggerMiddleware, registry } from './middleware/prometheus';
-import cors from 'cors';
-import { save_log } from './controllers/save-log.controller';
+import { createApp } from './app';
+import { runMigrations } from '@microservices-template/shared';
 
-const app = express()
+async function main() {
+  const { app, db, logger, config } = createApp();
 
-app.use(express.json()); 
-app.use(cors());
-app.use(requestLoggerMiddleware);
+  // Run pending database migrations
+  if (db && config.database.migrationsDir) {
+    await runMigrations(db, config.database.migrationsDir, logger);
+  }
 
-app.get('/ping', function (req, res) {
-    res.send('pong');
-})
-app.post('/logs', save_log);
+  const server = app.listen(config.service.port, () => {
+    logger.info(`${config.service.name} running on port ${config.service.port}`);
+  });
 
-app.get('/metrics', async (req, res) => {
-    res.set('Content-Type', 'text/plain');
-    res.send(await registry.metrics());
-});
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info('Shutting down...');
+    server.close();
+    if (db) await db.close();
+    process.exit(0);
+  };
 
-const server = app.listen(3000)
-
-export {
-    app,
-    server,
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
+
+main().catch((err) => {
+  console.error('Failed to start:', err);
+  process.exit(1);
+});

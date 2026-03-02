@@ -1,0 +1,42 @@
+services:
+  document_app:
+    image: node:20
+    volumes:
+      - ../../:/project
+      - document_uploads:/project/services/document/uploads
+    working_dir: /project/services/document
+    command: npm start
+    ports:
+      - "3004:3000"
+    depends_on:
+      document_db:
+        condition: service_healthy
+    networks:
+      - database
+      - messaging
+      - localprom
+
+  document_db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: document
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - document_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uadmin -padmin -h 127.0.0.1 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - 3308:3306
+    networks:
+      - database
+
+volumes:
+  document_db_data:
+  document_uploads:

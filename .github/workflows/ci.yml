@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-shared:
+    name: Build shared package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: packages/shared/package-lock.json
+
+      - name: Install & build shared
+        working-directory: packages/shared
+        run: npm ci && npm run build
+
+      - name: Upload shared build
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-dist
+          path: packages/shared/dist
+          retention-days: 1
+
+  typecheck:
+    name: Typecheck – ${{ matrix.service }}
+    needs: build-shared
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth, document, email, logs, notification]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: services/${{ matrix.service }}/package-lock.json
+
+      - name: Download shared build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: packages/shared/dist
+
+      - name: Install shared package.json (for node_modules)
+        working-directory: packages/shared
+        run: npm ci
+
+      - name: Install service deps
+        working-directory: services/${{ matrix.service }}
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: services/${{ matrix.service }}
+        run: npx tsc --noEmit
+
+  lint:
+    name: Lint – ${{ matrix.service }}
+    needs: build-shared
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth, document, email, logs, notification]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: services/${{ matrix.service }}/package-lock.json
+
+      - name: Download shared build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: packages/shared/dist
+
+      - name: Install shared package.json (for node_modules)
+        working-directory: packages/shared
+        run: npm ci
+
+      - name: Install service deps
+        working-directory: services/${{ matrix.service }}
+        run: npm ci
+
+      - name: Lint
+        working-directory: services/${{ matrix.service }}
+        run: npx eslint 'src/**/*.ts'
+
+  test:
+    name: Test – ${{ matrix.service }}
+    needs: build-shared
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth, document, email, logs, notification]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: services/${{ matrix.service }}/package-lock.json
+
+      - name: Download shared build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: packages/shared/dist
+
+      - name: Install shared package.json (for node_modules)
+        working-directory: packages/shared
+        run: npm ci
+
+      - name: Install service deps
+        working-directory: services/${{ matrix.service }}
+        run: npm ci
+
+      - name: Test
+        working-directory: services/${{ matrix.service }}
+        run: npx jest --passWithNoTests --detectOpenHandles --ci

@@ -1,0 +1,59 @@
+service:
+  name: email
+  port: 3000
+  logLevel: info
+
+database:
+  type: none
+
+features:
+  prometheus: true
+  auth: false
+  cors: true
+  healthCheck: true
+
+cors:
+  origins:
+    - "*"
+
+messaging:
+  enabled: true
+  nsqdHost: nsqd
+  nsqdHttpPort: 4151
+  nsqLookupdHost: nsqlookupd
+  nsqLookupdHttpPort: 4161
+
+# ── Email-specific config ─────────────────────────────────────────────────
+email:
+  provider: smtp           # smtp | sendgrid
+  from: noreply@example.com
+  fromName: MyApp
+
+  smtp:
+    host: mailhog
+    port: 1025
+    secure: false
+    # user: ""
+    # password: ""
+
+  # sendgrid:
+  #   apiKey: SG.xxxxx
+
+  templates:
+    welcome:
+      subject: "Welcome to {{appName}}!"
+      body: |
+        Hi {{name}},
+
+        Welcome to {{appName}}! Your account has been created.
+
+        Cheers,
+        The Team
+    passwordReset:
+      subject: "Password Reset Request"
+      body: |
+        Hi,
+
+        You requested a password reset. Use this token: {{resetToken}}
+
+        If you didn't request this, please ignore this email.

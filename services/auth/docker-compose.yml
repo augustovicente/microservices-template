@@ -1,0 +1,40 @@
+services:
+  auth_app:
+    image: node:20
+    volumes:
+      - ../../:/project
+    working_dir: /project/services/auth
+    command: npm start
+    ports:
+      - "3002:3000"
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - database
+      - messaging
+      - localprom
+
+  auth_db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: auth
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - auth_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uadmin -padmin -h 127.0.0.1 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - 3307:3306
+    networks:
+      - database
+
+volumes:
+  auth_db_data:

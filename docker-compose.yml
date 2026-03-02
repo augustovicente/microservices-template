@@ -57,10 +57,43 @@ services:
     ports:
       - 3000:3000
 
+  # ── NSQ Message Bus ──────────────────────────────────────────────────────
+  nsqlookupd:
+    image: nsqio/nsq
+    command: /nsqlookupd
+    ports:
+      - 4160:4160   # TCP
+      - 4161:4161   # HTTP
+    networks:
+      - messaging
+
+  nsqd:
+    image: nsqio/nsq
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
+    depends_on:
+      - nsqlookupd
+    ports:
+      - 4150:4150   # TCP
+      - 4151:4151   # HTTP
+    networks:
+      - messaging
+
+  nsqadmin:
+    image: nsqio/nsq
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+    depends_on:
+      - nsqlookupd
+    ports:
+      - 4171:4171   # Web UI
+    networks:
+      - messaging
+
 networks:
   localprom:
     driver: bridge
   database:
+    driver: bridge
+  messaging:
     driver: bridge
 
 volumes:

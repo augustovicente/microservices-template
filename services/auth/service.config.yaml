@@ -1,0 +1,45 @@
+service:
+  name: auth
+  port: 3000
+  logLevel: info
+
+database:
+  type: mysql
+  host: auth_db
+  port: 3306
+  name: auth
+  user: admin
+  password: admin
+  poolSize: 10
+  migrationsDir: ./db-migrations
+
+features:
+  prometheus: true
+  auth: false        # auth service does NOT protect itself with auth middleware
+  cors: true
+  healthCheck: true
+
+cors:
+  origins:
+    - "*"
+
+messaging:
+  enabled: true
+  nsqdHost: nsqd
+  nsqdHttpPort: 4151
+  nsqLookupdHost: nsqlookupd
+  nsqLookupdHttpPort: 4161
+
+# ── Auth-specific config ──────────────────────────────────────────────────
+jwt:
+  accessTokenSecret: change-me-access-secret
+  refreshTokenSecret: change-me-refresh-secret
+  accessTokenExpiry: 15m
+  refreshTokenExpiry: 7d
+
+roles:
+  - admin
+  - user
+  - moderator
+
+defaultRole: user

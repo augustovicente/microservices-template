@@ -1,0 +1,40 @@
+service:
+  name: notification
+  port: 3000
+  logLevel: info
+
+database:
+  type: mysql
+  host: notification_db
+  port: 3306
+  name: notification
+  user: admin
+  password: admin
+  poolSize: 10
+  migrationsDir: ./db-migrations
+
+features:
+  prometheus: true
+  auth: false
+  cors: true
+  healthCheck: true
+
+cors:
+  origins:
+    - "*"
+
+messaging:
+  enabled: true
+  nsqdHost: nsqd
+  nsqdHttpPort: 4151
+  nsqLookupdHost: nsqlookupd
+  nsqLookupdHttpPort: 4161
+
+# ── Notification-specific config ──────────────────────────────────────────
+notification:
+  channels:
+    - in_app
+    # - push          # future: FCM / APNs
+    # - sms           # future: Twilio
+  maxPerPage: 50
+  autoCleanupDays: 90

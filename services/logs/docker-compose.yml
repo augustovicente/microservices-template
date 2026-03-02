@@ -2,8 +2,8 @@ services:
   logs_app:
     image: node:20
     volumes:
-      - ./:/app
-    working_dir: /app
+      - ../../:/project
+    working_dir: /project/services/logs
     command: npm start
     ports:
       - 3001:3000
@@ -12,3 +12,4 @@ services:
         condition: service_healthy
     networks:
       - database
+      - localprom

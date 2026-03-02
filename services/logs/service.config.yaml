@@ -1,0 +1,24 @@
+service:
+  name: logs
+  port: 3000
+  logLevel: info
+
+database:
+  type: mysql
+  host: logs_db
+  port: 3306
+  name: logs
+  user: admin
+  password: admin
+  poolSize: 10
+  migrationsDir: ./db-migrations
+
+features:
+  prometheus: true
+  auth: false
+  cors: true
+  healthCheck: true
+
+cors:
+  origins:
+    - "*"

@@ -28,3 +28,27 @@ scrape_configs:
     static_configs:
       - targets: 
         - logs_app:3000
+
+  - job_name: 'auth_app'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+        - auth_app:3000
+
+  - job_name: 'email_app'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+        - email_app:3000
+
+  - job_name: 'document_app'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+        - document_app:3000
+
+  - job_name: 'notification_app'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+        - notification_app:3000
